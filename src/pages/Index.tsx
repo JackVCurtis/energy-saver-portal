@@ -24,8 +24,8 @@ const Index = () => {
     {
       title: 'Cost Savings',
       description: 'Calculate estimated savings from energy efficiency improvements',
-      icon: <TrendingDown className="h-6 w-6 text-energy-green" />,
-    },
+      icon: <TrendingDown className="h-6 w-6 text-energy-green" />
+    }
   ];
 
   return (
