@@ -50,11 +50,22 @@ export const ProjectsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       const { data, error } = await supabase
         .from('projects')
         .select('*')
-        .order('createdAt', { ascending: false });
+        .order('created_at', { ascending: false });
 
       if (error) throw error;
       
-      setProjects(data || []);
+      // Transform snake_case to camelCase
+      const transformedData: Project[] = (data || []).map(item => ({
+        id: item.id,
+        title: item.title,
+        description: item.description,
+        costEstimate: Number(item.cost_estimate),
+        savingsEstimate: Number(item.savings_estimate),
+        createdAt: item.created_at,
+        updatedAt: item.updated_at
+      }));
+      
+      setProjects(transformedData);
     } catch (error: any) {
       console.error('Error fetching projects:', error);
       setError(error);
@@ -70,13 +81,30 @@ export const ProjectsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
 
   const createProject = async (project: Omit<Project, 'id' | 'createdAt' | 'updatedAt'>) => {
     try {
+      // Transform camelCase to snake_case for database
       const { data, error } = await supabase
         .from('projects')
-        .insert(project)
+        .insert({
+          title: project.title,
+          description: project.description,
+          cost_estimate: project.costEstimate,
+          savings_estimate: project.savingsEstimate
+        })
         .select()
         .single();
 
       if (error) throw error;
+      
+      // Transform the returned data
+      const newProject: Project = {
+        id: data.id,
+        title: data.title,
+        description: data.description,
+        costEstimate: Number(data.cost_estimate),
+        savingsEstimate: Number(data.savings_estimate),
+        createdAt: data.created_at,
+        updatedAt: data.updated_at
+      };
       
       toast({
         title: 'Success',
@@ -84,7 +112,7 @@ export const ProjectsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       });
       
       // Update local state (though the subscription should handle this)
-      setProjects([data, ...projects]);
+      setProjects([newProject, ...projects]);
     } catch (error: any) {
       console.error('Error creating project:', error);
       toast({
@@ -98,9 +126,16 @@ export const ProjectsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
 
   const updateProject = async (id: string, project: Partial<Omit<Project, 'id' | 'createdAt' | 'updatedAt'>>) => {
     try {
+      // Transform camelCase to snake_case for database
+      const updateData: any = {};
+      if (project.title !== undefined) updateData.title = project.title;
+      if (project.description !== undefined) updateData.description = project.description;
+      if (project.costEstimate !== undefined) updateData.cost_estimate = project.costEstimate;
+      if (project.savingsEstimate !== undefined) updateData.savings_estimate = project.savingsEstimate;
+      
       const { error } = await supabase
         .from('projects')
-        .update(project)
+        .update(updateData)
         .eq('id', id);
 
       if (error) throw error;
