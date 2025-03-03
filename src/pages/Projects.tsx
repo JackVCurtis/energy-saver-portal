@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useProjects } from '@/contexts/ProjectsContext';
 import PageTransition from '@/components/layout/PageTransition';
@@ -23,9 +23,10 @@ import {
 } from "@/components/ui/dialog";
 import { Edit, DollarSign, TrendingUp, Plus } from 'lucide-react';
 import ProjectForm from '@/components/forms/ProjectForm';
+import { useToast } from '@/hooks/use-toast';
 
 const Projects = () => {
-  const { role } = useAuth();
+  const { role, user, checkRole } = useAuth();
   const { projects, isLoading, createProject, updateProject } = useProjects();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [currentProject, setCurrentProject] = useState<{
@@ -35,6 +36,30 @@ const Projects = () => {
     costEstimate: number;
     savingsEstimate: number;
   } | null>(null);
+  const [isAdmin, setIsAdmin] = useState(false);
+  const { toast } = useToast();
+
+  // Check if user has admin role on mount and when user changes
+  useEffect(() => {
+    const verifyAdminRole = async () => {
+      if (!user) return;
+      
+      try {
+        const userRole = await checkRole();
+        setIsAdmin(userRole === 'admin');
+        console.log('Current user role:', userRole);
+      } catch (error) {
+        console.error('Error checking role:', error);
+        toast({
+          title: 'Error',
+          description: 'Could not verify administrative privileges',
+          variant: 'destructive',
+        });
+      }
+    };
+    
+    verifyAdminRole();
+  }, [user, checkRole, toast]);
 
   const handleCreateProject = (values: typeof currentProject) => {
     if (!values) return;
@@ -93,7 +118,7 @@ const Projects = () => {
               </p>
             </div>
             
-            {role === 'admin' && (
+            {isAdmin && (
               <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
                 <DialogTrigger asChild>
                   <Button onClick={() => setCurrentProject({
@@ -137,8 +162,8 @@ const Projects = () => {
           ) : projects.length === 0 ? (
             <div className="text-center py-12">
               <p className="text-muted-foreground text-lg">No projects available yet.</p>
-              {role === 'admin' && (
-                <p className="mt-2">Click "Add New Project" to create the first one.</p>
+              {isAdmin && (
+                <p className="mt-2">Click "Create New Project" to create the first one.</p>
               )}
             </div>
           ) : (
@@ -177,7 +202,7 @@ const Projects = () => {
                   </CardContent>
                   
                   <CardFooter className="border-t pt-4">
-                    {role === 'admin' ? (
+                    {isAdmin ? (
                       <Button 
                         variant="outline" 
                         className="w-full"
