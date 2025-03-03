@@ -5,6 +5,7 @@ export interface Project {
   description: string;
   costEstimate: number;
   savingsEstimate: number;
+  imageUrl?: string;
   createdAt: string;
   updatedAt: string;
 }

@@ -61,6 +61,7 @@ export const ProjectsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         description: item.description,
         costEstimate: Number(item.cost_estimate),
         savingsEstimate: Number(item.savings_estimate),
+        imageUrl: item.image_url || undefined,
         createdAt: item.created_at,
         updatedAt: item.updated_at
       }));
@@ -88,7 +89,8 @@ export const ProjectsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
           title: project.title,
           description: project.description,
           cost_estimate: project.costEstimate,
-          savings_estimate: project.savingsEstimate
+          savings_estimate: project.savingsEstimate,
+          image_url: project.imageUrl
         })
         .select()
         .single();
@@ -102,6 +104,7 @@ export const ProjectsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         description: data.description,
         costEstimate: Number(data.cost_estimate),
         savingsEstimate: Number(data.savings_estimate),
+        imageUrl: data.image_url || undefined,
         createdAt: data.created_at,
         updatedAt: data.updated_at
       };
@@ -132,6 +135,7 @@ export const ProjectsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       if (project.description !== undefined) updateData.description = project.description;
       if (project.costEstimate !== undefined) updateData.cost_estimate = project.costEstimate;
       if (project.savingsEstimate !== undefined) updateData.savings_estimate = project.savingsEstimate;
+      if (project.imageUrl !== undefined) updateData.image_url = project.imageUrl;
       
       const { error } = await supabase
         .from('projects')

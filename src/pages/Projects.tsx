@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useProjects } from '@/contexts/ProjectsContext';
@@ -21,7 +20,7 @@ import {
   DialogTitle, 
   DialogTrigger
 } from "@/components/ui/dialog";
-import { Edit, DollarSign, TrendingUp, Plus } from 'lucide-react';
+import { Edit, DollarSign, TrendingUp, Plus, Image as ImageIcon } from 'lucide-react';
 import ProjectForm from '@/components/forms/ProjectForm';
 import { useToast } from '@/hooks/use-toast';
 
@@ -35,11 +34,11 @@ const Projects = () => {
     description: string;
     costEstimate: number;
     savingsEstimate: number;
+    imageUrl: string;
   } | null>(null);
   const [isAdmin, setIsAdmin] = useState(false);
   const { toast } = useToast();
 
-  // Check if user has admin role on mount and when user changes
   useEffect(() => {
     const verifyAdminRole = async () => {
       if (!user) return;
@@ -67,7 +66,8 @@ const Projects = () => {
       title: values.title,
       description: values.description,
       costEstimate: values.costEstimate,
-      savingsEstimate: values.savingsEstimate
+      savingsEstimate: values.savingsEstimate,
+      imageUrl: values.imageUrl
     });
   };
 
@@ -77,7 +77,8 @@ const Projects = () => {
       title: values.title,
       description: values.description,
       costEstimate: values.costEstimate,
-      savingsEstimate: values.savingsEstimate
+      savingsEstimate: values.savingsEstimate,
+      imageUrl: values.imageUrl
     });
   };
 
@@ -87,7 +88,8 @@ const Projects = () => {
       title: project.title,
       description: project.description,
       costEstimate: project.costEstimate,
-      savingsEstimate: project.savingsEstimate
+      savingsEstimate: project.savingsEstimate,
+      imageUrl: project.imageUrl
     });
     setIsDialogOpen(true);
   };
@@ -125,7 +127,8 @@ const Projects = () => {
                     title: '',
                     description: '',
                     costEstimate: 0,
-                    savingsEstimate: 0
+                    savingsEstimate: 0,
+                    imageUrl: ''
                   })}>
                     <Plus className="mr-2 h-4 w-4" />
                     Create New Project
@@ -170,6 +173,19 @@ const Projects = () => {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {projects.map((project) => (
                 <Card key={project.id} className="h-full flex flex-col">
+                  {project.imageUrl ? (
+                    <div className="aspect-video w-full overflow-hidden rounded-t-lg">
+                      <img 
+                        src={project.imageUrl} 
+                        alt={project.title} 
+                        className="w-full h-full object-cover"
+                      />
+                    </div>
+                  ) : (
+                    <div className="aspect-video w-full bg-muted flex items-center justify-center rounded-t-lg">
+                      <ImageIcon className="h-12 w-12 text-muted-foreground/50" />
+                    </div>
+                  )}
                   <CardHeader>
                     <CardTitle>{project.title}</CardTitle>
                     <CardDescription>
