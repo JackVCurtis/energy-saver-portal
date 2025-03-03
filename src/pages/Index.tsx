@@ -18,7 +18,7 @@ const Index = () => {
     },
     {
       title: 'Smart Recommendations',
-      description: 'Personalized recommendations based on your home's energy profile',
+      description: "Personalized recommendations based on your home's energy profile",
       icon: <LightbulbOff className="h-6 w-6 text-energy-teal" />,
     },
     {
