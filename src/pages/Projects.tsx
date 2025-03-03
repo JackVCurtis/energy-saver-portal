@@ -21,7 +21,7 @@ import {
   DialogTitle, 
   DialogTrigger
 } from "@/components/ui/dialog";
-import { Edit, DollarSign, TrendingUp } from 'lucide-react';
+import { Edit, DollarSign, TrendingUp, Plus } from 'lucide-react';
 import ProjectForm from '@/components/forms/ProjectForm';
 
 const Projects = () => {
@@ -102,7 +102,8 @@ const Projects = () => {
                     costEstimate: 0,
                     savingsEstimate: 0
                   })}>
-                    Add New Project
+                    <Plus className="mr-2 h-4 w-4" />
+                    Create New Project
                   </Button>
                 </DialogTrigger>
                 <DialogContent className="sm:max-w-[550px]">
