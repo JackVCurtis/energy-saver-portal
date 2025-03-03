@@ -2,12 +2,14 @@
 import { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { Home, BarChart3, FolderKanban, User, Menu, X } from 'lucide-react';
+import { Home, BarChart3, FolderKanban, LogOut, Menu, X, Shield } from 'lucide-react';
+import { useAuth } from '@/contexts/AuthContext';
 
 const Navbar = () => {
   const [scrolled, setScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const location = useLocation();
+  const { user, role, signOut } = useAuth();
   
   const isActive = (path: string) => location.pathname === path;
 
@@ -32,16 +34,44 @@ const Navbar = () => {
     setMobileMenuOpen(false);
   };
 
-  const navItems = [
-    { name: 'Home', path: '/', icon: <Home className="h-4 w-4 mr-2" /> },
-    { name: 'Dashboard', path: '/dashboard', icon: <BarChart3 className="h-4 w-4 mr-2" /> },
-    { name: 'Projects', path: '/projects', icon: <FolderKanban className="h-4 w-4 mr-2" /> },
-  ];
+  const handleSignOut = async () => {
+    await signOut();
+    closeMobileMenu();
+  };
 
-  const authItems = [
-    { name: 'Login', path: '/login' },
-    { name: 'Sign Up', path: '/signup', highlight: true }
-  ];
+  // Navigation items based on authentication state and role
+  const getNavItems = () => {
+    const commonItems = [
+      { name: 'Home', path: '/', icon: <Home className="h-4 w-4 mr-2" /> },
+    ];
+    
+    // Add authenticated user items
+    if (user) {
+      commonItems.push(
+        { name: 'Dashboard', path: '/dashboard', icon: <BarChart3 className="h-4 w-4 mr-2" /> },
+        { name: 'Projects', path: '/projects', icon: <FolderKanban className="h-4 w-4 mr-2" /> },
+      );
+      
+      // Add admin-only items
+      if (role === 'admin') {
+        commonItems.push(
+          { name: 'Admin', path: '/admin', icon: <Shield className="h-4 w-4 mr-2" /> },
+        );
+      }
+    }
+    
+    return commonItems;
+  };
+  
+  const navItems = getNavItems();
+  
+  // Auth items based on authentication state
+  const authItems = user 
+    ? [{ name: 'Sign Out', action: handleSignOut }]
+    : [
+        { name: 'Login', path: '/login' },
+        { name: 'Sign Up', path: '/signup', highlight: true }
+      ];
 
   return (
     <nav className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
@@ -79,9 +109,10 @@ const Navbar = () => {
 
             <div className="flex items-center pl-6 ml-6 border-l">
               {authItems.map((item) => (
-                item.highlight ? (
+                item.path ? (
                   <Button 
                     key={item.name} 
+                    variant={item.highlight ? "default" : "ghost"}
                     asChild
                     className="ml-2"
                   >
@@ -91,10 +122,11 @@ const Navbar = () => {
                   <Button 
                     key={item.name} 
                     variant="ghost" 
-                    asChild
-                    className="ml-2"
+                    className="ml-2 flex items-center"
+                    onClick={item.action}
                   >
-                    <Link to={item.path}>{item.name}</Link>
+                    {item.name === 'Sign Out' && <LogOut className="h-4 w-4 mr-2" />}
+                    {item.name}
                   </Button>
                 )
               ))}
@@ -141,9 +173,10 @@ const Navbar = () => {
             <div className="pt-4 pb-2 border-t border-gray-200 dark:border-gray-700">
               <div className="flex items-center gap-2 px-2">
                 {authItems.map((item) => (
-                  item.highlight ? (
+                  item.path ? (
                     <Button 
                       key={item.name} 
+                      variant={item.highlight ? "default" : "outline"}
                       asChild
                       className="w-full"
                     >
@@ -153,10 +186,11 @@ const Navbar = () => {
                     <Button 
                       key={item.name} 
                       variant="outline" 
-                      asChild
-                      className="w-full"
+                      className="w-full flex items-center justify-center"
+                      onClick={item.action}
                     >
-                      <Link to={item.path} onClick={closeMobileMenu}>{item.name}</Link>
+                      {item.name === 'Sign Out' && <LogOut className="h-4 w-4 mr-2" />}
+                      {item.name}
                     </Button>
                   )
                 ))}

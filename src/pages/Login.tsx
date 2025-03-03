@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+
+import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { CustomInput } from '@/components/ui/CustomInput';
@@ -15,6 +16,7 @@ import { motion } from 'framer-motion';
 import Navbar from '@/components/layout/Navbar';
 import PageTransition from '@/components/layout/PageTransition';
 import { useToast } from '@/hooks/use-toast';
+import { useAuth } from '@/contexts/AuthContext';
 
 const Login = () => {
   const [email, setEmail] = useState('');
@@ -24,6 +26,14 @@ const Login = () => {
   
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { signIn, user } = useAuth();
+
+  // Redirect if already logged in
+  useEffect(() => {
+    if (user) {
+      navigate('/dashboard');
+    }
+  }, [user, navigate]);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -38,31 +48,12 @@ const Login = () => {
     }
     
     setIsLoading(true);
+    const { error } = await signIn(email, password);
+    setIsLoading(false);
     
-    // This is a mock login - in a real app, you would connect to an authentication service
-    setTimeout(() => {
-      setIsLoading(false);
-      
-      // Simulate successful login for demo purposes
-      // For admin access, use admin@example.com / admin123
-      if (email === 'admin@example.com' && password === 'admin123') {
-        // Admin login
-        toast({
-          title: "Success",
-          description: "Logged in as admin",
-        });
-        localStorage.setItem('userRole', 'admin');
-        navigate('/admin');
-      } else {
-        // Regular user login
-        toast({
-          title: "Success",
-          description: "Logged in successfully",
-        });
-        localStorage.setItem('userRole', 'user');
-        navigate('/dashboard');
-      }
-    }, 1500);
+    if (!error) {
+      navigate('/dashboard');
+    }
   };
 
   const togglePasswordVisibility = () => {
@@ -86,7 +77,7 @@ const Login = () => {
                 <CustomCardHeader>
                   <CustomCardTitle className="text-2xl">Welcome back</CustomCardTitle>
                   <CustomCardDescription>
-                    Sign in to access your account
+                    Sign in to access your energy savings dashboard
                   </CustomCardDescription>
                 </CustomCardHeader>
                 
@@ -152,12 +143,6 @@ const Login = () => {
                 </CustomCardFooter>
               </form>
             </CustomCard>
-            
-            <div className="mt-6 text-center text-xs text-muted-foreground">
-              <p>For demo, use:</p>
-              <p>Regular user: user@example.com / password</p>
-              <p>Admin: admin@example.com / admin123</p>
-            </div>
           </motion.div>
         </div>
       </div>

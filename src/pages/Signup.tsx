@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+
+import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { CustomInput } from '@/components/ui/CustomInput';
@@ -15,9 +16,11 @@ import { motion } from 'framer-motion';
 import Navbar from '@/components/layout/Navbar';
 import PageTransition from '@/components/layout/PageTransition';
 import { useToast } from '@/hooks/use-toast';
+import { useAuth } from '@/contexts/AuthContext';
 
 const Signup = () => {
-  const [name, setName] = useState('');
+  const [firstName, setFirstName] = useState('');
+  const [lastName, setLastName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -26,11 +29,19 @@ const Signup = () => {
   
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { signUp, user } = useAuth();
+
+  // Redirect if already logged in
+  useEffect(() => {
+    if (user) {
+      navigate('/dashboard');
+    }
+  }, [user, navigate]);
 
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!name || !email || !password || !confirmPassword) {
+    if (!firstName || !lastName || !email || !password || !confirmPassword) {
       toast({
         title: "Error",
         description: "Please fill in all fields",
@@ -48,21 +59,22 @@ const Signup = () => {
       return;
     }
     
-    setIsLoading(true);
-    
-    // This is a mock signup - in a real app, you would connect to an authentication service
-    setTimeout(() => {
-      setIsLoading(false);
-      
+    if (password.length < 6) {
       toast({
-        title: "Success",
-        description: "Account created successfully",
+        title: "Error",
+        description: "Password must be at least 6 characters",
+        variant: "destructive",
       });
-      
-      // Store user role (regular user)
-      localStorage.setItem('userRole', 'user');
-      navigate('/dashboard');
-    }, 1500);
+      return;
+    }
+    
+    setIsLoading(true);
+    const { error } = await signUp(email, password, firstName, lastName);
+    setIsLoading(false);
+    
+    if (!error) {
+      navigate('/login');
+    }
   };
 
   const togglePasswordVisibility = () => {
@@ -91,14 +103,23 @@ const Signup = () => {
                 </CustomCardHeader>
                 
                 <CustomCardContent className="space-y-4">
-                  <CustomInput
-                    label="Full Name"
-                    type="text"
-                    placeholder="Enter your name"
-                    value={name}
-                    onChange={(e) => setName(e.target.value)}
-                    icon={<User className="h-4 w-4" />}
-                  />
+                  <div className="grid grid-cols-2 gap-4">
+                    <CustomInput
+                      label="First Name"
+                      type="text"
+                      placeholder="First name"
+                      value={firstName}
+                      onChange={(e) => setFirstName(e.target.value)}
+                    />
+                    
+                    <CustomInput
+                      label="Last Name"
+                      type="text"
+                      placeholder="Last name"
+                      value={lastName}
+                      onChange={(e) => setLastName(e.target.value)}
+                    />
+                  </div>
                   
                   <CustomInput
                     label="Email"
